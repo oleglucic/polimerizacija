@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Полимеризација</title>
+<meta name="description" content="Полимеризација: презентација и интерактивни модели (адиција, кондензација, вулканизација, силикони). Олег Лучић, III-1.">
+<meta property="og:title" content="Полимеризација">
+<meta property="og:description" content="Презентација и интерактивна лабораторија: повуци клизач, замени атом, вулканизуј каучук.">
+<meta name="theme-color" content="#0E6B5D">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M6 40 L20 24 L34 40 L48 24 L58 36' fill='none' stroke='%230E6B5D' stroke-width='6' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='24' r='7' fill='%2312232A'/%3E%3Ccircle cx='34' cy='40' r='7' fill='%2312232A'/%3E%3Ccircle cx='48' cy='24' r='7' fill='%2312232A'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..700&family=Golos+Text:wght@400..700&display=swap">
 <style>
 /* VOICE: школски огледни час, јасно и смирено, читљиво са пројектора
@@ -95,6 +100,9 @@ button.on,button.go{background:var(--teal);color:var(--bg)}
 @keyframes fadein { from { opacity:0; } }
 .deck section.alt { background:#E8EFEC; }
 .deck .body { flex:1; display:flex; flex-direction:column; justify-content:center; gap:64px; min-height:0; }
+.hint{text-align:center;color:var(--soft);font-size:15px;margin:8px 0 0}
+footer{padding:24px max(5vw,16px) 32px;color:var(--soft);font-size:15px;text-align:center}footer a{color:var(--teal)}
+@media(max-width:700px){.ctrl button{padding:8px 12px}.hint{display:none}}
 </style>
 </head>
 <body>
@@ -515,6 +523,7 @@ button.on,button.go{background:var(--teal);color:var(--bg)}
 
 </div></div>
 <div class="ctrl"><button id="dPrev">Назад</button><span class="num" id="dNum"></span><button id="dNext" class="go">Напред</button><button id="dNotes">Белешке</button><button id="dFull">Цео екран</button></div>
+<p class="hint">Листај стрелицама ← → или кликом на слајд · N белешке · F цео екран</p>
 <div class="notes" id="dNotesBox"></div>
 </div>
 <main>
@@ -581,6 +590,7 @@ button.on,button.go{background:var(--teal);color:var(--bg)}
 </section>
 
 </main>
+<footer>Олег Лучић, III-1 · хемија · <a href="https://github.com/oleglucic/polimerizacija">извор на GitHub-у</a></footer>
 <script>
 {
 const $=id=>document.getElementById(id);
@@ -613,6 +623,7 @@ addEventListener('keydown',e=>{if(!$('prez').classList.contains('on'))return;if(
  else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();prev();}
  else if(e.key==='n'||e.key==='н'){$('dNotes').click();}else if(e.key==='f'||e.key==='ф'){$('dFull').click();}});
 go(0,false);
+let tx=null;stage.addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});stage.addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;tx=null;if(Math.abs(d)>40){e.preventDefault();d<0?next():prev();}});
 route();
 const cs=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||'#888';
 const T=(x,y,s,txt,fill,w)=>`<text x="${x}" y="${y}" font-size="${s}" font-family="Golos Text,Arial" font-weight="${w||500}" fill="${fill}" text-anchor="middle">${txt}</text>`;
