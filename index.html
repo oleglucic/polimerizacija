@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="sr-Cyrl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Полимеризација</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500..700&family=Golos+Text:wght@400..700&display=swap">
+<style>
+/* VOICE: школски огледни час, јасно и смирено, читљиво са пројектора
+   IDEA: комплет молекулских модела на лабораторијском столу
+   PICTURE: велики модел у CPK бојама који се мења под рукама
+   COLOUR and TYPE: светли лабораторијски под, тамно мастило, тиркиз, CPK; Unbounded + Golos Text
+   LAYOUT: картице станица горе, модел велики, контроле и објашњење испод */
+:root{color-scheme:light;--bg:#F3F6F5;--panel:#E3ECE9;--ink:#12232A;--soft:#4F6168;--teal:#0E6B5D;--line:#C3D3CE;--C:#3A474C;--H:#FFFFFF;--O:#D23B2E;--Cl:#2E9E4F;--F:#8BC34A;--S:#E5B800}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#0F1C21;--panel:#18292F;--ink:#E8F0EE;--soft:#A9BCB8;--teal:#5DCAA5;--line:#2E4A50;--C:#9FB3AE;--H:#E8F0EE}}
+:root[data-theme=dark]{color-scheme:dark;--bg:#0F1C21;--panel:#18292F;--ink:#E8F0EE;--soft:#A9BCB8;--teal:#5DCAA5;--line:#2E4A50;--C:#9FB3AE;--H:#E8F0EE}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 'Golos Text',Arial,sans-serif;overflow-x:clip}
+header{padding:28px max(5vw,16px) 8px;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 24px}
+h1{font:600 clamp(26px,3vw,40px)/1.05 'Unbounded',Verdana,sans-serif;margin:0;letter-spacing:-.5px}
+header p{margin:0;color:var(--soft)}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px max(5vw,16px) 0}
+nav a{flex:none;color:var(--ink);text-decoration:none;padding:10px 18px;border:2px solid var(--line);border-radius:999px;font-weight:500;min-height:44px;display:flex;align-items:center}
+nav a[aria-current=true]{background:var(--teal);border-color:var(--teal);color:var(--bg)}
+nav a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+main{padding:20px max(5vw,16px) 40px;max-width:1400px;margin:0 auto}
+.st{display:none}.st.on{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:32px;align-items:start}
+.fig{background:var(--panel);border-radius:6px;position:relative;min-height:420px;overflow:hidden}
+.fig svg{display:block;width:100%;height:auto}
+.side h2{font:600 clamp(22px,2.2vw,32px)/1.1 'Unbounded',Verdana,sans-serif;margin:0 0 12px}
+.side p{margin:0 0 14px;color:var(--soft)}
+.big{font:600 clamp(28px,3vw,44px)/1.1 'Unbounded',Verdana,sans-serif;color:var(--teal);margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.f{font-size:22px;font-weight:500;color:var(--ink);margin:6px 0}
+label{display:block;font-weight:500;margin:18px 0 6px}
+input[type=range]{width:100%;height:44px;accent-color:var(--teal)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+button{font:inherit;font-weight:500;min-height:44px;padding:8px 18px;border-radius:6px;border:2px solid var(--teal);background:transparent;color:var(--teal);cursor:pointer}
+button.on,button.go{background:var(--teal);color:var(--bg)}
+.tag{display:inline-block;padding:6px 14px;border-radius:999px;background:var(--S);color:#3B2E00;font-weight:600}
+.cap{font-size:20px;color:var(--ink);min-height:3.2em}
+@media(max-width:860px){.st.on{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.deckwrap{display:none;padding:8px max(3vw,12px) 24px}
+.deckwrap.on{display:block}
+.stage{position:relative;width:100%;background:#0b1418;border-radius:6px;overflow:hidden;cursor:pointer}
+.deck{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+.deck section{width:1920px;height:1080px;box-sizing:border-box;position:relative;overflow:hidden}
+.deck section[hidden]{display:none}
+.deck p,.deck h1,.deck h2,.deck h3,.deck table{margin:0}
+.deck aside{display:none}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-top:12px}
+.ctrl .num{min-width:90px;text-align:center;font-variant-numeric:tabular-nums;color:var(--soft)}
+.notes{display:none;max-width:1100px;margin:14px auto 0;padding:16px 20px;background:var(--panel);border-radius:6px;font-size:19px;line-height:1.6}
+.notes.on{display:block}
+.stage:fullscreen{border-radius:0;background:#0b1418;display:flex;align-items:center}
+.deck section { padding:112px 128px 176px; background:#F3F6F5; color:#12232A; font-family:'Golos Text', Arial, sans-serif; display:flex; flex-direction:column; gap:56px; }
+.deck section.ink { background:#12232A; color:#E8F0EE; }
+.deck section.teal { background:#0E6B5D; color:#F3F6F5; }
+.deck h1 { font-family:'Unbounded', Verdana, sans-serif; font-size:112px; font-weight:700; line-height:1.05; letter-spacing:-2px; margin:0; }
+.deck h2 { font-family:'Unbounded', Verdana, sans-serif; font-size:56px; font-weight:600; line-height:1.15; letter-spacing:-1px; margin:0; max-width:1500px; }
+.deck h3 { font-family:'Unbounded', Verdana, sans-serif; font-size:38px; font-weight:600; line-height:1.2; margin:0; }
+.deck .lead { font-size:38px; line-height:1.45; color:#3D5057; margin:0; max-width:1150px; }
+.deck .ink .lead { color:#B7CBC6; }
+.deck .teal .lead { color:#D5EAE4; }
+.deck .note { font-size:28px; line-height:1.45; color:#4F6168; margin:0; max-width:1400px; }
+.deck .ink .note { color:#9FB3AE; }
+.deck .cols { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:64px; }
+.deck .cols.two { grid-template-columns:repeat(2, minmax(0,1fr)); }
+.deck .item { display:flex; flex-direction:column; gap:16px; border-top:3px solid #12232A; padding-top:28px; }
+.deck .item .t { font-size:32px; line-height:1.45; color:#3D5057; margin:0; }
+.deck .item .ex { font-size:30px; line-height:1.45; color:#0E6B5D; font-weight:600; margin:0; }
+.deck .rx { display:flex; align-items:center; gap:32px; font-size:50px; font-weight:500; flex-wrap:wrap; }
+.deck .rx .m { margin:0; }
+.deck .arr { display:flex; flex-direction:column; align-items:center; gap:4px; font-size:24px; color:#0E6B5D; font-weight:600; }
+.deck .rx-names { font-size:28px; color:#4F6168; margin:0; }
+.deck .panel { background:#E3ECE9; padding:48px 56px; display:flex; flex-direction:column; gap:24px; }
+.deck .dbl { color:#C0392B; }
+.deck .sulfur { color:#8A6A00; }
+.deck .tbl { width:100%; border-collapse:collapse; font-size:32px; }
+.deck .tbl th { text-align:left; font-size:24px; color:#0E6B5D; font-weight:600; padding:0 24px 16px 0; border-bottom:3px solid #12232A; }
+.deck .tbl td { padding:18px 24px 18px 0; border-bottom:1px solid #C3D3CE; color:#12232A; }
+.deck .tbl td.fx { font-weight:500; color:#0E5247; }
+.deck .quote { font-family:'Unbounded', Verdana, sans-serif; font-size:72px; font-weight:600; line-height:1.15; letter-spacing:-1px; margin:0; max-width:1500px; }
+.deck .stepn { font-family:'Unbounded', Verdana, sans-serif; font-size:72px; font-weight:700; color:#0E6B5D; margin:0; line-height:1; }
+.deck .mono { font-size:28px; line-height:1.55; color:#0E5247; font-weight:500; margin:0; }
+.deck .pg { position:absolute; right:128px; bottom:60px; width:200px; text-align:right; font-size:24px; color:#6B7D80; margin:0; }
+.deck .ink .pg,.deck .teal .pg { color:#9FB3AE; }
+.deck .chainbar { position:absolute; left:128px; bottom:56px; }
+.deck .fragment { opacity:0.12; transition:opacity 0.4s; }
+.deck .fragment.visible { opacity:1; }
+.deck .grow { animation:grow 0.9s ease-out both; }
+.deck .late { animation:fadein 0.6s ease-out 0.9s both; }
+@keyframes grow { from { opacity:0; transform:translateX(-60px); } }
+@keyframes fadein { from { opacity:0; } }
+.deck section.alt { background:#E8EFEC; }
+.deck .body { flex:1; display:flex; flex-direction:column; justify-content:center; gap:64px; min-height:0; }
+</style>
+</head>
+<body>
+<header><h1>Полимеризација</h1><p>Олег Лучић, III-1. Презентација и интерактивни модели.</p></header>
+<nav id="nav"></nav>
+<div class="deckwrap" id="prez">
+<div class="stage" id="stage" aria-label="Презентација, кликни или притисни стрелицу за даље"><div class="deck" id="deck">
+<section id="s-cover" class="ink">
+<svg aria-label="Модел ланца полиетена: угљеникови атоми повезани у цик-цак, са водоницима" width="1920" height="360" viewBox="0 0 1920 360" style="position:absolute; left:0; top:500px;">
+<g stroke="#4A5F5A" stroke-width="10" stroke-linecap="round">
+
+</g>
+<g><animate attributeName="opacity" values="0;0;0;1" dur="0.6s" begin="0s"/><line x1="60" y1="120" x2="24" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="24" cy="30" r="20" fill="#E8F0EE"/><line x1="60" y1="120" x2="96" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="96" cy="30" r="20" fill="#E8F0EE"/><circle cx="60" cy="120" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;1" dur="0.7s" begin="0s"/><line x1="60" y1="120" x2="180" y2="220" stroke="#4A5F5A" stroke-width="10"/><line x1="180" y1="220" x2="144" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="144" cy="310" r="20" fill="#E8F0EE"/><line x1="180" y1="220" x2="216" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="216" cy="310" r="20" fill="#E8F0EE"/><circle cx="180" cy="220" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;1" dur="0.8s" begin="0s"/><line x1="180" y1="220" x2="300" y2="120" stroke="#4A5F5A" stroke-width="10"/><line x1="300" y1="120" x2="264" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="264" cy="30" r="20" fill="#E8F0EE"/><line x1="300" y1="120" x2="336" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="336" cy="30" r="20" fill="#E8F0EE"/><circle cx="300" cy="120" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;1" dur="1.0s" begin="0s"/><line x1="300" y1="120" x2="420" y2="220" stroke="#4A5F5A" stroke-width="10"/><line x1="420" y1="220" x2="384" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="384" cy="310" r="20" fill="#E8F0EE"/><line x1="420" y1="220" x2="456" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="456" cy="310" r="20" fill="#E8F0EE"/><circle cx="420" cy="220" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1" dur="1.1s" begin="0s"/><line x1="420" y1="220" x2="540" y2="120" stroke="#4A5F5A" stroke-width="10"/><line x1="540" y1="120" x2="504" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="504" cy="30" r="20" fill="#E8F0EE"/><line x1="540" y1="120" x2="576" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="576" cy="30" r="20" fill="#E8F0EE"/><circle cx="540" cy="120" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1" dur="1.2s" begin="0s"/><line x1="540" y1="120" x2="660" y2="220" stroke="#4A5F5A" stroke-width="10"/><line x1="660" y1="220" x2="624" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="624" cy="310" r="20" fill="#E8F0EE"/><line x1="660" y1="220" x2="696" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="696" cy="310" r="20" fill="#E8F0EE"/><circle cx="660" cy="220" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;1" dur="1.3s" begin="0s"/><line x1="660" y1="220" x2="780" y2="120" stroke="#4A5F5A" stroke-width="10"/><line x1="780" y1="120" x2="744" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="744" cy="30" r="20" fill="#E8F0EE"/><line x1="780" y1="120" x2="816" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="816" cy="30" r="20" fill="#E8F0EE"/><circle cx="780" cy="120" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;1" dur="1.4s" begin="0s"/><line x1="780" y1="120" x2="900" y2="220" stroke="#4A5F5A" stroke-width="10"/><line x1="900" y1="220" x2="864" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="864" cy="310" r="20" fill="#E8F0EE"/><line x1="900" y1="220" x2="936" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="936" cy="310" r="20" fill="#E8F0EE"/><circle cx="900" cy="220" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.6s" begin="0s"/><line x1="900" y1="220" x2="1020" y2="120" stroke="#4A5F5A" stroke-width="10"/><line x1="1020" y1="120" x2="984" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="984" cy="30" r="20" fill="#E8F0EE"/><line x1="1020" y1="120" x2="1056" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="1056" cy="30" r="20" fill="#E8F0EE"/><circle cx="1020" cy="120" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.7s" begin="0s"/><line x1="1020" y1="120" x2="1140" y2="220" stroke="#4A5F5A" stroke-width="10"/><line x1="1140" y1="220" x2="1104" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="1104" cy="310" r="20" fill="#E8F0EE"/><line x1="1140" y1="220" x2="1176" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="1176" cy="310" r="20" fill="#E8F0EE"/><circle cx="1140" cy="220" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.8s" begin="0s"/><line x1="1140" y1="220" x2="1260" y2="120" stroke="#4A5F5A" stroke-width="10"/><line x1="1260" y1="120" x2="1224" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="1224" cy="30" r="20" fill="#E8F0EE"/><line x1="1260" y1="120" x2="1296" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="1296" cy="30" r="20" fill="#E8F0EE"/><circle cx="1260" cy="120" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.9s" begin="0s"/><line x1="1260" y1="120" x2="1380" y2="220" stroke="#4A5F5A" stroke-width="10"/><line x1="1380" y1="220" x2="1344" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="1344" cy="310" r="20" fill="#E8F0EE"/><line x1="1380" y1="220" x2="1416" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="1416" cy="310" r="20" fill="#E8F0EE"/><circle cx="1380" cy="220" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="2.0s" begin="0s"/><line x1="1380" y1="220" x2="1500" y2="120" stroke="#4A5F5A" stroke-width="10"/><line x1="1500" y1="120" x2="1464" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="1464" cy="30" r="20" fill="#E8F0EE"/><line x1="1500" y1="120" x2="1536" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="1536" cy="30" r="20" fill="#E8F0EE"/><circle cx="1500" cy="120" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="2.2s" begin="0s"/><line x1="1500" y1="120" x2="1620" y2="220" stroke="#4A5F5A" stroke-width="10"/><line x1="1620" y1="220" x2="1584" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="1584" cy="310" r="20" fill="#E8F0EE"/><line x1="1620" y1="220" x2="1656" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="1656" cy="310" r="20" fill="#E8F0EE"/><circle cx="1620" cy="220" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="2.3s" begin="0s"/><line x1="1620" y1="220" x2="1740" y2="120" stroke="#4A5F5A" stroke-width="10"/><line x1="1740" y1="120" x2="1704" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="1704" cy="30" r="20" fill="#E8F0EE"/><line x1="1740" y1="120" x2="1776" y2="30" stroke="#4A5F5A" stroke-width="10"/><circle cx="1776" cy="30" r="20" fill="#E8F0EE"/><circle cx="1740" cy="120" r="36" fill="#6F8580"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="2.4s" begin="0s"/><line x1="1740" y1="120" x2="1860" y2="220" stroke="#4A5F5A" stroke-width="10"/><line x1="1860" y1="220" x2="1824" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="1824" cy="310" r="20" fill="#E8F0EE"/><line x1="1860" y1="220" x2="1896" y2="310" stroke="#4A5F5A" stroke-width="10"/><circle cx="1896" cy="310" r="20" fill="#E8F0EE"/><circle cx="1860" cy="220" r="36" fill="#6F8580"/></g>
+</svg>
+<div style="display:flex; flex-direction:column; gap:40px;">
+<h1>Полимеризација</h1>
+<p class="lead" style="max-width:1100px;">Како од малих молекула настају пластика, гума и силикони</p>
+</div>
+<p class="note" style="position:absolute; left:128px; bottom:96px; width:900px; color:#E8F0EE;">Олег Лучић, III-1</p>
+<aside>Добар дан. Тема моје презентације је полимеризација. Проћи ћемо кроз то шта су полимери, како их делимо и која су им својства, а онда кроз две главне врсте полимеризације: адициону и кондензациону. На крају ћу говорити о вулканизацији каучука и о силиконима. Доле на слајду је модел дела молекула полиетена: тамније куглице су атоми угљеника повезани у ланац, светле су атоми водоника.</aside>
+</section>
+
+<section id="s-uvod" class="teal">
+<div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:56px;">
+<p class="quote">Замисли свој дан у свету без пластике и гуме.</p>
+<p class="lead fragment" style="max-width:1300px;">Кеса, флаша, пнеуматик, најлонска јакна, кућиште телефона, тефлонски тигањ: све су то полимери.</p>
+</div>
+<svg class="chainbar" aria-label="Слајд 2 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#3A5A55" stroke-width="3"/><polyline points="10,10 58,30" fill="none" stroke="#5DCAA5" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#5DCAA5"/><circle cx="58" cy="30" r="8" fill="#5DCAA5"/><circle cx="106" cy="10" r="6" fill="#3A5A55"/><circle cx="154" cy="30" r="6" fill="#3A5A55"/><circle cx="202" cy="10" r="6" fill="#3A5A55"/><circle cx="250" cy="30" r="6" fill="#3A5A55"/><circle cx="298" cy="10" r="6" fill="#3A5A55"/><circle cx="346" cy="30" r="6" fill="#3A5A55"/><circle cx="394" cy="10" r="6" fill="#3A5A55"/><circle cx="442" cy="30" r="6" fill="#3A5A55"/><circle cx="490" cy="10" r="6" fill="#3A5A55"/><circle cx="538" cy="30" r="6" fill="#3A5A55"/><circle cx="586" cy="10" r="6" fill="#3A5A55"/><circle cx="634" cy="30" r="6" fill="#3A5A55"/><circle cx="682" cy="10" r="6" fill="#3A5A55"/><circle cx="730" cy="30" r="6" fill="#3A5A55"/><circle cx="778" cy="10" r="6" fill="#3A5A55"/><circle cx="826" cy="30" r="6" fill="#3A5A55"/><circle cx="874" cy="10" r="6" fill="#3A5A55"/><circle cx="922" cy="30" r="6" fill="#3A5A55"/><circle cx="970" cy="10" r="6" fill="#3A5A55"/><circle cx="1018" cy="30" r="6" fill="#3A5A55"/><circle cx="1066" cy="10" r="6" fill="#3A5A55"/><circle cx="1114" cy="30" r="6" fill="#3A5A55"/></svg><p class="pg">2 / 24</p>
+<aside>Ово питање је из нашег уџбеника. Пауза од пар секунди, нека разред размисли. Без пластике и гуме не би било кеса, флаша, гума за аутомобиле, одеће од синтетичких влакана, кућишта телефона, изолације на кабловима. Поента: полимери су свуда око нас, а сви настају реакцијом која се зове полимеризација. Узгред, реч „пластика” потиче из грчког и значи „обликовано”. Постоје и природни полимери: скроб, целулоза, протеини, па и ДНК.</aside>
+</section>
+
+<section id="s-pojmovi">
+<h2>Мономер, полимер и степен полимеризације</h2>
+<div class="body">
+<svg aria-label="Један мономер M прелази у ланац од много повезаних мономера" width="1664" height="140" viewBox="0 0 1664 140">
+<circle cx="80" cy="70" r="26" fill="#0E6B5D"/><text x="80" y="80" text-anchor="middle" font-size="28" font-family="Golos Text, Arial" fill="#F3F6F5" font-weight="600">M</text>
+<text x="150" y="82" font-size="36" font-family="Golos Text, Arial" fill="#12232A">× n</text>
+<line x1="280" y1="70" x2="500" y2="70" stroke="#0E6B5D" stroke-width="3"/><path d="M498 62 L514 70 L498 78 Z" fill="#0E6B5D"/>
+<text x="390" y="50" text-anchor="middle" font-size="24" font-family="Golos Text, Arial" fill="#0E6B5D" font-weight="600">полимеризација</text>
+<line x1="560" y1="70" x2="1400" y2="70" stroke="#12232A" stroke-width="6" stroke-dasharray="0" />
+<text x="540" y="82" text-anchor="end" font-size="36" font-family="Golos Text, Arial" fill="#12232A">~</text>
+<text x="1420" y="82" font-size="36" font-family="Golos Text, Arial" fill="#12232A">~</text>
+<circle cx="620" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;1" dur="0.9s" begin="0s"/></circle><circle cx="710" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1" dur="1.1s" begin="0s"/></circle><circle cx="800" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1" dur="1.2s" begin="0s"/></circle><circle cx="890" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;1" dur="1.3s" begin="0s"/></circle><circle cx="980" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.5s" begin="0s"/></circle><circle cx="1070" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.7s" begin="0s"/></circle><circle cx="1160" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.8s" begin="0s"/></circle><circle cx="1250" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.9s" begin="0s"/></circle><circle cx="1340" cy="70" r="26" fill="#0E6B5D"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="2.1s" begin="0s"/></circle>
+</svg>
+<div class="cols">
+<div class="item"><h3>Мономер</h3><p class="t">мали молекул од кога се гради ланац</p><p class="ex">етен, CH₂=CH₂</p></div>
+<div class="item"><h3>Полимер</h3><p class="t">макромолекул од великог броја истих јединица</p><p class="ex">полиетен</p></div>
+<div class="item"><h3>Степен полимеризације, n</h3><p class="t">колико је мономера повезано у један ланац</p><p class="ex">стотине до хиљаде</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 3 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="6" fill="#C3D3CE"/><circle cx="202" cy="10" r="6" fill="#C3D3CE"/><circle cx="250" cy="30" r="6" fill="#C3D3CE"/><circle cx="298" cy="10" r="6" fill="#C3D3CE"/><circle cx="346" cy="30" r="6" fill="#C3D3CE"/><circle cx="394" cy="10" r="6" fill="#C3D3CE"/><circle cx="442" cy="30" r="6" fill="#C3D3CE"/><circle cx="490" cy="10" r="6" fill="#C3D3CE"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">3 / 24</p>
+<aside>Полимеризација је реакција у којој се од великог броја малих молекула, мономера, добија један велики молекул, полимер или макромолекул. Слово n означава велики број молекула и зове се степен полимеризације. Назив полимера гради се тако што се испред назива мономера дода префикс поли-, што значи „много”: полиетен, полипропен. Пазите на назив: полиетилен звучи као да има двоструке везе, али нема. Двоструке везе се при полимеризацији раскидају. Пошто ланци нису сви исте дужине, полимер нема једну тачну моларну масу, него просечну. [Лабораторија: овде отвори страницу са моделима, станица „Ланац”, и покажи уживо.]</aside>
+</section>
+
+<section id="s-poreklo">
+<h2>Подела према пореклу</h2>
+<div class="body">
+<div class="cols">
+<div class="item"><h3>Природни</h3><p class="t">настају у живим бићима</p><p class="ex">целулоза, скроб, протеини, природни каучук</p></div>
+<div class="item"><h3>Полусинтетички</h3><p class="t">хемијски измењени природни полимери</p><p class="ex">вискоза и целулоид, од целулозе</p></div>
+<div class="item"><h3>Синтетички</h3><p class="t">у потпуности их прави човек</p><p class="ex">полиетен, PVC, најлон, силикони</p></div>
+</div>
+<p class="note">Полиетен је синтетисан 1933, најлон 1935, PET 1941. Масовна производња пластике креће после 1950.</p>
+</div>
+<svg class="chainbar" aria-label="Слајд 4 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="6" fill="#C3D3CE"/><circle cx="250" cy="30" r="6" fill="#C3D3CE"/><circle cx="298" cy="10" r="6" fill="#C3D3CE"/><circle cx="346" cy="30" r="6" fill="#C3D3CE"/><circle cx="394" cy="10" r="6" fill="#C3D3CE"/><circle cx="442" cy="30" r="6" fill="#C3D3CE"/><circle cx="490" cy="10" r="6" fill="#C3D3CE"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">4 / 24</p>
+<aside>Прва подела је према пореклу. Природни полимери настају у природи: целулоза у биљкама, протеини у нашем телу, природни каучук у млечном соку дрвета каучуковца. Полусинтетички су природни полимери које смо хемијски изменили, на пример вискоза и целулоид од целулозе. Синтетичке у потпуности правимо ми, и њих је данас највише. Њихова историја је кратка: полиетен 1933, најлон 1935, PET 1941, а од 1950. креће масовна индустријска производња. Значи, пластика је стара мање од сто година.</aside>
+</section>
+
+<section id="s-struktura">
+<h2>Подела према облику ланца</h2>
+<div class="body">
+<div class="cols">
+<div class="item"><svg aria-label="Линеарни ланац без грана" width="440" height="200" viewBox="0 0 440 200"><path d="M20 120 L70 70 L120 120 L170 70 L220 120 L270 70 L320 120 L370 70 L420 120" fill="none" stroke="#12232A" stroke-width="8" stroke-linejoin="round"/></svg><h3>Линеарни</h3><p class="t">дугачак ланац без грана; ланци се збијају, материјал је чврст</p><p class="ex">полиетен високе густине</p></div>
+<div class="item"><svg aria-label="Разгранати ланац са бочним гранама" width="440" height="200" viewBox="0 0 440 200"><path d="M20 120 L70 70 L120 120 L170 70 L220 120 L270 70 L320 120 L370 70 L420 120" fill="none" stroke="#12232A" stroke-width="8" stroke-linejoin="round"/><path d="M120 120 L120 175 L160 195 M220 120 L220 175 M270 70 L270 20 L310 5" fill="none" stroke="#0E6B5D" stroke-width="7" stroke-linejoin="round"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1" dur="1.1s" begin="0s"/></path></svg><h3>Разгранати</h3><p class="t">бочне гране сметају збијању; материјал је мекши</p><p class="ex">полиетен ниске густине, кесе</p></div>
+<div class="item"><svg aria-label="Два ланца повезана попречним мостовима у мрежу" width="440" height="200" viewBox="0 0 440 200"><path d="M20 60 L70 30 L120 60 L170 30 L220 60 L270 30 L320 60 L370 30 L420 60" fill="none" stroke="#12232A" stroke-width="8" stroke-linejoin="round"/><path d="M20 170 L70 140 L120 170 L170 140 L220 170 L270 140 L320 170 L370 140 L420 170" fill="none" stroke="#12232A" stroke-width="8" stroke-linejoin="round"/><path d="M120 60 L120 170 M270 30 L270 140 M370 30 L370 140" fill="none" stroke="#E5B800" stroke-width="8"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.5s" begin="0s"/></path></svg><h3>Умрежени</h3><p class="t">ланци повезани мостовима у тродимензионалну мрежу</p><p class="ex">гума, бакелит</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 5 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="6" fill="#C3D3CE"/><circle cx="298" cy="10" r="6" fill="#C3D3CE"/><circle cx="346" cy="30" r="6" fill="#C3D3CE"/><circle cx="394" cy="10" r="6" fill="#C3D3CE"/><circle cx="442" cy="30" r="6" fill="#C3D3CE"/><circle cx="490" cy="10" r="6" fill="#C3D3CE"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">5 / 24</p>
+<aside>Друга подела је према облику ланца. Линеарни полимери су дугачки ланци без грана. Они се лако слажу један уз други, па је материјал чвршћи и гушћи. Разгранати имају бочне гране, ланци не могу да се збију, па је материјал мекши и лакши. Такав је полиетен од ког се праве кесе. Умрежени полимери имају ланце повезане попречним мостовима у тродимензионалну мрежу. Такви су гума и бакелит. Мостови су обојени жуто са разлогом: код гуме су то мостови од сумпора, а до њих ћемо доћи код вулканизације.</aside>
+</section>
+
+<section id="s-toplota">
+<h2>Подела према понашању на топлоти</h2>
+<div class="body">
+<div class="cols">
+<div class="item"><h3>Термопласти</h3><p class="t">загревањем омекшају, хлађењем очврсну, и тако више пута; могу да се рециклирају</p><p class="ex">полиетен, PVC, полистирен, PET</p></div>
+<div class="item"><h3>Дуропласти</h3><p class="t">очврсну једном заувек; на високој температури се не топе, него распадају</p><p class="ex">бакелит, епоксидне смоле</p></div>
+<div class="item"><h3>Еластомери</h3><p class="t">могу да се истегну и врате у првобитни облик</p><p class="ex">природна и вештачка гума, силиконска гума</p></div>
+</div>
+<p class="note">Према броју врста мономера: хомополимер има један (полиетен), кополимер два или више (стирен-бутадиенска гума за пнеуматике).</p>
+</div>
+<svg class="chainbar" aria-label="Слајд 6 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="6" fill="#C3D3CE"/><circle cx="346" cy="30" r="6" fill="#C3D3CE"/><circle cx="394" cy="10" r="6" fill="#C3D3CE"/><circle cx="442" cy="30" r="6" fill="#C3D3CE"/><circle cx="490" cy="10" r="6" fill="#C3D3CE"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">6 / 24</p>
+<aside>Трећа подела је најважнија за примену. Термопласти се загревањем топе и могу поново да се обликују, а хемијска структура им се при томе не мења. Зато могу да се рециклирају. Дуропласти, који се зову и термореактивни, у другом степену загревања очврсну и после тога више не могу да се истопе. Еластомери су еластични: истегнеш их и они се врате, као гума. Још једна подела, према броју мономера: хомополимер је грађен од једне врсте мономера, а кополимер од две или више. Пример је стирен-бутадиенска гума, која чини више од половине све вештачке гуме.</aside>
+</section>
+
+<section id="s-svojstva">
+<h2>Заједничка својства полимера</h2>
+<div class="body">
+<div class="cols" style="row-gap:48px;">
+<div class="item"><h3>Велика моларна маса</h3><p class="t">десетине и стотине хиљада g/mol</p></div>
+<div class="item"><h3>Немају тачку топљења</h3><p class="t">омекшавају у интервалу температура</p></div>
+<div class="item"><h3>Изолатори</h3><p class="t">не проводе електричну струју ни топлоту</p></div>
+<div class="item"><h3>Хемијски отпорни</h3><p class="t">не реагују са водом, киселинама и базама</p></div>
+<div class="item"><h3>Мала густина</h3><p class="t">лаки, а издржљиви</p></div>
+<div class="item"><h3>Својства се подешавају</h3><p class="t">други мономер или услови дају други материјал</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 7 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="6" fill="#C3D3CE"/><circle cx="394" cy="10" r="6" fill="#C3D3CE"/><circle cx="442" cy="30" r="6" fill="#C3D3CE"/><circle cx="490" cy="10" r="6" fill="#C3D3CE"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">7 / 24</p>
+<aside>Шта је заједничко свим полимерима? Имају огромну моларну масу. Пошто ланци нису исте дужине, немају тачну тачку топљења, него омекшавају постепено. Добри су изолатори, па се од њих праве омотачи каблова. Хемијски су отпорни: не рђају и не труле. Лаки су, а чврсти. Најважније је последње: ако мало изменимо мономер, добијамо сасвим други материјал. Уџбеник наводи пример: ако у етену један водоник заменимо хлором, добијамо хлоретен, а од њега PVC, који је тврд и од ког се праве водоводне цеви. На томе се заснива читава хемија полимера.</aside>
+</section>
+
+<section id="s-adicija">
+<h2>Адициона полимеризација</h2>
+<div class="body">
+<div class="panel">
+<div class="rx"><p class="m">n CH₂<span class="dbl">=</span>CH₂</p><div class="arr"><span>R–O–O–R</span><svg width="200" height="20" aria-label="прелази у"><line x1="0" y1="10" x2="186" y2="10" stroke="#0E6B5D" stroke-width="3"/><path d="M184 2 L200 10 L184 18 Z" fill="#0E6B5D"/></svg></div><p class="m">R–O–(CH₂–CH₂)ₙ–O–R</p></div>
+<p class="rx-names">етен (етилен) → полиетен (полиетилен)</p>
+</div>
+<div class="cols">
+<div class="item"><h3>Двострука веза</h3><p class="t">мономер мора да има везу C=C; она се раскида и молекули се надовезују</p></div>
+<div class="item"><h3>Ништа се не издваја</h3><p class="t">сви атоми мономера заврше у полимеру</p></div>
+<div class="item"><h3>Почиње је пероксид</h3><p class="t">органски пероксид R–O–O–R даје радикале</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 8 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="6" fill="#C3D3CE"/><circle cx="442" cy="30" r="6" fill="#C3D3CE"/><circle cx="490" cy="10" r="6" fill="#C3D3CE"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">8 / 24</p>
+<aside>Прва врста је адициона полимеризација. Мономер мора да има двоструку везу између атома угљеника, она је на слајду обојена црвено. При реакцији се двоструке везе раскидају и настају једноструке, преко којих се молекули повезују у ланац. Важно: ништа се не издваја, сви атоми мономера заврше у полимеру. Реакција се одвија у присуству органских пероксида, R–O–O–R. Најпознатији пример је полиетен, од ког се праве кесе, фолије и посуђе. Групе R–O на крајевима ланца потичу од пероксида.</aside>
+</section>
+
+<section id="s-mehanizam">
+<h2>Механизам: радикалска полимеризација</h2>
+<div class="body">
+<div class="cols">
+<div class="item fragment"><p class="stepn">1</p><h3>Иницијација</h3><p class="mono">RO–OR → RO• + •OR</p><p class="mono">RO• + CH₂=CH₂ → RO–CH₂–ĊH₂</p><p class="t">пероксид се загревањем распада на радикале; радикал напада двоструку везу</p></div>
+<div class="item fragment"><p class="stepn">2</p><h3>Пропагација</h3><p class="mono">RO–CH₂–ĊH₂ + CH₂=CH₂ → RO–CH₂–CH₂–CH₂–ĊH₂</p><p class="t">неспарени електрон је увек на крају, па ланац расте хиљадама пута</p></div>
+<div class="item fragment"><p class="stepn">3</p><h3>Терминација</h3><p class="mono">RO–(CH₂–CH₂)ₙ₋₁–CH₂–ĊH₂ + •OR → RO–(CH₂–CH₂)ₙ–OR</p><p class="t">два радикала се споје и раст се зауставља</p></div>
+</div>
+<p class="note">Радикал (•) је честица са неспареним електроном и зато је веома реактиван.</p>
+</div>
+<svg class="chainbar" aria-label="Слајд 9 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="6" fill="#C3D3CE"/><circle cx="490" cy="10" r="6" fill="#C3D3CE"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">9 / 24</p>
+<aside>Ово је механизам из уџбеника, реакције 3 до 6. Сваки корак се појављује на клик. Први корак је иницијација: загревањем се пероксид распада на два радикала RO•. Радикал има неспарен електрон и зато је веома реактиван. Он напада двоструку везу етена, везује се за један угљеник, а неспарени електрон прелази на други. Други корак је пропагација: тај нови радикал напада следећи молекул етена, и тако хиљадама пута, па ланац расте. Трећи је терминација: кад се радикал на крају ланца сусретне са другим радикалом, они се споје, неспареног електрона више нема и раст се зауставља. Полимери који настају овако зову се адициони полимери. [Лабораторија: овде отвори страницу са моделима, станица „Механизам”, и покажи уживо.]</aside>
+</section>
+
+<section id="s-tabela">
+<h2>Адициони полимери у свакодневици</h2>
+<div class="body">
+<table class="tbl">
+<tr><th>Полимер</th><th>Мономер</th><th>Формула полимера</th><th>Примена</th></tr>
+<tr><td>полиетен, PE</td><td>етен, CH₂=CH₂</td><td class="fx">–[CH₂–CH₂]ₙ–</td><td>кесе, фолије, посуђе</td></tr>
+<tr><td>полипропен, PP</td><td>пропен, CH₂=CH–CH₃</td><td class="fx">–[CH₂–CH(CH₃)]ₙ–</td><td>влакна, хемијско посуђе</td></tr>
+<tr><td>поли(винил-хлорид), PVC</td><td>хлоретен, CH₂=CH–Cl</td><td class="fx">–[CH₂–CHCl]ₙ–</td><td>водоводне цеви</td></tr>
+<tr><td>тефлон</td><td>тетрафлуоретен, CF₂=CF₂</td><td class="fx">–[CF₂–CF₂]ₙ–</td><td>тигањи, изолација</td></tr>
+<tr><td>полистирен, PS</td><td>стирен, C₆H₅–CH=CH₂</td><td class="fx">–[CH₂–CH(C₆H₅)]ₙ–</td><td>стиропор, изолација</td></tr>
+</table>
+</div>
+<svg class="chainbar" aria-label="Слајд 10 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="6" fill="#C3D3CE"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">10 / 24</p>
+<aside>Ово је табела 5.5.1 из уџбеника. Погледајте колону мономер: сви имају исту основу CH₂=CH, само је један атом водоника замењен нечим другим. Метил групом добијамо полипропен, хлором PVC, бензеновим прстеном полистирен, а ако све водонике заменимо флуором, добијамо тефлон. Тефлон је отпоран на високу температуру и ништа се за њега не лепи, па се њиме превлаче тигањи. Механизам полимеризације је код свих исти као код етена. [Лабораторија: овде отвори страницу са моделима, станица „Замени H”, и покажи уживо.]</aside>
+</section>
+
+<section id="s-polipropen">
+<h2>Пластика или нешто слично каучуку?</h2>
+<div class="body">
+<div class="panel">
+<div class="rx"><p class="m">n CH₂<span class="dbl">=</span>CH–CH₃</p><div class="arr"><span>R–O–O–R</span><svg width="200" height="20" aria-label="прелази у"><line x1="0" y1="10" x2="186" y2="10" stroke="#0E6B5D" stroke-width="3"/><path d="M184 2 L200 10 L184 18 Z" fill="#0E6B5D"/></svg></div><p class="m">R–O–(CH₂–CH(CH₃))ₙ–O–R</p></div>
+<p class="rx-names">пропен (пропилен) → полипропен (полипропилен)</p>
+</div>
+<div class="cols two">
+<div class="item fragment"><h3>Нема двоструких веза у производу</h3><p class="t">настаје пластична маса</p><p class="ex">полимери алкена: PE, PP, PVC</p></div>
+<div class="item fragment" style="border-top-color:#C0392B;"><h3>У производу остају двоструке везе</h3><p class="t">настаје материјал сличан каучуку</p><p class="ex" style="color:#A3301F;">полимери диена: следећи слајд</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 11 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="6" fill="#C3D3CE"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">11 / 24</p>
+<aside>Ово је пример 5.10 из уџбеника. Пропен се полимеризује исто као етен: двострука веза се раскида и настаје полипропен. Питање из уџбеника гласи: да ли је производ пластика или материјал сличан каучуку? Одговор: пластика, јер се полимеризују молекули алкена и у производу нема двоструких веза. То је правило које ћемо користити до краја: ако у полимеру остану двоструке везе, добијамо нешто слично каучуку. Те двоструке везе ће нам касније бити кључне за вулканизацију.</aside>
+</section>
+
+<section id="s-dieni">
+<h2>Полимеризација диена</h2>
+<div class="body">
+<div class="panel" style="gap:40px;">
+<div class="rx" style="font-size:38px;"><p class="m">n CH₂=C(CH₃)–CH=CH₂</p><div class="arr"><span>R–O–O–R</span><svg width="200" height="20" aria-label="прелази у"><line x1="0" y1="10" x2="186" y2="10" stroke="#0E6B5D" stroke-width="3"/><path d="M184 2 L200 10 L184 18 Z" fill="#0E6B5D"/></svg></div><p class="m">–(CH₂–C(CH₃)<span class="dbl">=</span>CH–CH₂)ₙ–</p></div>
+<p class="rx-names">изопрен → полиизопрен, природни и вештачки каучук</p>
+<div class="rx" style="font-size:38px;"><p class="m">n CH₂=CH–CH=CH₂</p><div class="arr"><span>R–O–O–R</span><svg width="200" height="20" aria-label="прелази у"><line x1="0" y1="10" x2="186" y2="10" stroke="#0E6B5D" stroke-width="3"/><path d="M184 2 L200 10 L184 18 Z" fill="#0E6B5D"/></svg></div><p class="m">–(CH₂–CH<span class="dbl">=</span>CH–CH₂)ₙ–</p></div>
+<p class="rx-names">1,3-бутадиен → буна-каучук</p>
+</div>
+<p class="note">Мономер има две двоструке везе, а у полимеру по свакој јединици остаје једна. Од каучука се добија гума.</p>
+</div>
+<svg class="chainbar" aria-label="Слајд 12 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="6" fill="#C3D3CE"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">12 / 24</p>
+<aside>Коњуговани диени имају две двоструке везе и такође се полимеризују, слично алкенима, у присуству пероксида. Разлика је у томе што у полимеру остаје по једна двострука веза у свакој јединици, обојена црвено. Полимеризацијом изопрена настаје полиизопрен, који је по саставу исти као природни каучук. Полимеризацијом 1,3-бутадиена настаје буна-каучук, супстанца слична каучуку. Име долази од бутадиен и натријум, Na, који се користио као катализатор. Од каучука, природног и вештачког, добија се гума.</aside>
+</section>
+
+<section id="s-glava-rep">
+<h2>Изопрен се везује по принципу „глава за реп”</h2>
+<div class="body">
+<svg aria-label="Два молекула изопрена: глава првог се везује за реп другог, тако да се везују крајњи атоми угљеника C1 и C4" width="1664" height="300" viewBox="0 0 1664 300">
+<g font-family="Golos Text, Arial" font-size="30" text-anchor="middle">
+<rect x="40" y="90" width="300" height="110" fill="#E3ECE9"/><rect x="340" y="90" width="300" height="110" fill="#CFE3DD"/>
+<text x="190" y="155" fill="#12232A">реп</text><text x="490" y="155" fill="#12232A">глава</text>
+<g><animate attributeName="opacity" values="0;0;0;0;0;0;1" dur="0.9s" begin="0s"/><animateTransform attributeName="transform" type="translate" values="240 0;240 0;240 0;240 0;240 0;240 0;0 0" dur="1.2s" begin="0s"/><rect x="760" y="90" width="300" height="110" fill="#E3ECE9"/><rect x="1060" y="90" width="300" height="110" fill="#CFE3DD"/>
+<text x="910" y="155" fill="#12232A">реп</text><text x="1210" y="155" fill="#12232A">глава</text><text x="910" y="250" fill="#4F6168" font-size="24">CH₂=CH–</text><text x="1210" y="250" fill="#4F6168" font-size="24">C(CH₃)=CH₂</text></g>
+<g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.7s" begin="0s"/><line x1="640" y1="145" x2="760" y2="145" stroke="#C0392B" stroke-width="8"/>
+<text x="700" y="120" fill="#C0392B" font-size="24" font-weight="600">нова веза</text></g>
+<text x="190" y="250" fill="#4F6168" font-size="24">CH₂=CH–</text><text x="490" y="250" fill="#4F6168" font-size="24">C(CH₃)=CH₂</text>
+<text x="1500" y="155" fill="#12232A" font-size="44">…</text>
+</g>
+</svg>
+<div class="cols two">
+<div class="item"><h3>1,4-адиција</h3><p class="t">везују се крајњи атоми угљеника, C1 и C4</p></div>
+<div class="item"><h3>Двострука веза се помера</h3><p class="t">нова двострука веза настаје у средини, између C2 и C3</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 13 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="6" fill="#C3D3CE"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">13 / 24</p>
+<aside>Молекули изопрена се не везују било како, него по принципу „глава за реп”: глава једног молекула се веже за реп следећег. Механизам се зове 1,4-адиција. Обе двоструке везе изопрена се раскидају, крајњи атоми угљеника, први и четврти, везују се за суседне молекуле, а између другог и трећег угљеника настаје нова двострука веза. Зато у полиизопрену остаје по једна двострука веза у свакој јединици, што смо видели на претходном слајду.</aside>
+</section>
+
+<section id="s-kaucuk">
+<h2>Природни каучук</h2>
+<div class="body">
+<div class="cols two" style="align-items:start;">
+<div class="col" style="display:flex; flex-direction:column; gap:28px;">
+<p class="quote" style="font-size:56px; font-style:italic; font-family:'Golos Text', Arial, sans-serif;">Hevea brasiliensis</p>
+<p class="lead">тропско дрво каучуковац; у његовом млечном соку настаје полиизопрен</p>
+<p class="note">Својства природне гуме: велика еластичност и водоотпорност. Користи се и данас, нпр. за гуме авиона.</p>
+</div>
+<table class="tbl">
+<tr><th>Од дрвета до гуме</th></tr>
+<tr><td>1. Засеца се кора дрвета</td></tr>
+<tr><td>2. Цури млечни сок, латекс</td></tr>
+<tr><td>3. Латекс се згушњава у каучук</td></tr>
+<tr><td>4. Обрадом каучука добија се гума</td></tr>
+</table>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 14 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="6" fill="#C3D3CE"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">14 / 24</p>
+<aside>У појединим врстама тропског дрвећа, као што је каучуковац, Hevea brasiliensis, из деривата изопрена настаје природни каучук. Он је део млечног сока, латекса, који се из дрвета добија засецањем коре. Кад се латекс згусне, настаје каучук, а његовом обрадом природна гума. Због велике потребе за гумом кроз историју је усавршаван начин добијања вештачких гума, али се природна гума и даље користи, на пример за гуме на точковима авиона. Њена својства су велика еластичност и водоотпорност.</aside>
+</section>
+
+<section id="s-kondenzacija" class="alt">
+<h2>Кондензациона полимеризација</h2>
+<div class="body">
+<svg aria-label="Два мономера са функционалним групама реагују: настаје веза између њих и издваја се молекул воде" width="1664" height="260" viewBox="0 0 1664 260">
+<g font-family="Golos Text, Arial" text-anchor="middle">
+<rect x="20" y="70" width="240" height="100" fill="#CFE3DD"/><text x="140" y="132" font-size="34" fill="#12232A">мономер A</text>
+<text x="310" y="132" font-size="30" fill="#D23B2E" font-weight="600">–OH</text>
+<text x="400" y="132" font-size="40" fill="#12232A">+</text>
+<text x="480" y="132" font-size="30" fill="#12232A" font-weight="600">H–</text>
+<rect x="520" y="70" width="240" height="100" fill="#E3ECE9"/><text x="640" y="132" font-size="34" fill="#12232A">мономер B</text>
+<line x1="800" y1="120" x2="960" y2="120" stroke="#0E6B5D" stroke-width="3"/><path d="M958 112 L974 120 L958 128 Z" fill="#0E6B5D"/>
+<g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1" dur="1.1s" begin="0s"/><rect x="1010" y="70" width="240" height="100" fill="#CFE3DD"/><rect x="1250" y="70" width="240" height="100" fill="#E3ECE9"/>
+<text x="1130" y="132" font-size="34" fill="#12232A">A</text><text x="1370" y="132" font-size="34" fill="#12232A">B</text>
+<line x1="1250" y1="70" x2="1250" y2="170" stroke="#12232A" stroke-width="4"/>
+<g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.8s" begin="0s"/><animateTransform attributeName="transform" type="translate" values="0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 40;0 0" dur="1.8s" begin="0s"/><text x="1580" y="132" font-size="34" fill="#0E6B5D" font-weight="600">+ H₂O</text></g>
+<text x="1250" y="220" font-size="24" fill="#4F6168">нова веза</text></g>
+</g>
+</svg>
+<div class="cols">
+<div class="item"><h3>Мономери</h3><p class="t">имају по две функционалне групе, на пример –COOH, –OH, –NH₂</p></div>
+<div class="item"><h3>Споредни производ</h3><p class="t">при сваком повезивању издваја се мали молекул: H₂O или HCl</p></div>
+<div class="item"><h3>Ланац</h3><p class="t">јединица полимера није иста као мономер, јер је део атома отишао</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 15 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="6" fill="#C3D3CE"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">15 / 24</p>
+<aside>Друга велика врста је кондензациона полимеризација, или поликондензација. Овде мономери немају двоструку везу, него по две функционалне групе, на пример карбоксилну, хидроксилну или амино групу. Кад две групе реагују, молекули се повежу, а при томе се издваја мали молекул, најчешће вода, понекад хлороводоник. Пошто се на сваком месту повезивања нешто издвоји, јединица у полимеру није иста као мономер. То је главна разлика у односу на адициону полимеризацију. Две функционалне групе су потребне да би ланац могао да расте на оба краја.</aside>
+</section>
+
+<section id="s-pet">
+<h2>Полиестри: PET</h2>
+<div class="body">
+<div class="panel" style="gap:28px;">
+<p class="rx" style="font-size:36px; margin:0;">n HOOC–C₆H₄–COOH &nbsp;+&nbsp; n HO–CH₂–CH₂–OH</p>
+<p class="rx-names">терефтална киселина + етандиол (етилен-гликол)</p>
+<div class="rx" style="font-size:36px;"><div class="arr"><svg width="200" height="20" aria-label="прелази у"><line x1="0" y1="10" x2="186" y2="10" stroke="#0E6B5D" stroke-width="3"/><path d="M184 2 L200 10 L184 18 Z" fill="#0E6B5D"/></svg></div><p class="m">–[OC–C₆H₄–<span style="color:#D23B2E;">COO</span>–CH₂–CH₂–O]ₙ– &nbsp;+&nbsp; 2n H₂O</p></div>
+</div>
+<div class="cols">
+<div class="item"><h3>Естарска веза</h3><p class="t">–COO– настаје из киселине и алкохола</p></div>
+<div class="item"><h3>Примена</h3><p class="t">пластичне флаше, амбалажа</p></div>
+<div class="item"><h3>Влакна</h3><p class="t">полиестер у одећи</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 16 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="8" fill="#0E6B5D"/><circle cx="778" cy="10" r="6" fill="#C3D3CE"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">16 / 24</p>
+<aside>Први пример кондензационог полимера је PET, поли(етилен-терефталат). Мономери су терефтална киселина, која има две карбоксилне групе, и етандиол, који има две хидроксилне групе. Карбоксилна група једног и хидроксилна група другог реагују као при грађењу естра, и при томе се издваја вода. Пошто се естарске везе понављају, оваква једињења се зову полиестри. Од PET-а се праве пластичне флаше, а као влакно је познат као полиестер у одећи.</aside>
+</section>
+
+<section id="s-najlon">
+<h2>Полиамиди: најлон 6,6</h2>
+<div class="body">
+<div class="panel" style="gap:28px;">
+<p class="rx" style="font-size:36px; margin:0;">n HOOC–(CH₂)₄–COOH &nbsp;+&nbsp; n H₂N–(CH₂)₆–NH₂</p>
+<p class="rx-names">адипинска киселина + хексаметилендиамин</p>
+<div class="rx" style="font-size:36px;"><div class="arr"><svg width="200" height="20" aria-label="прелази у"><line x1="0" y1="10" x2="186" y2="10" stroke="#0E6B5D" stroke-width="3"/><path d="M184 2 L200 10 L184 18 Z" fill="#0E6B5D"/></svg></div><p class="m">–[OC–(CH₂)₄–<span style="color:#2E62B0;">CO–NH</span>–(CH₂)₆–NH]ₙ– &nbsp;+&nbsp; 2n H₂O</p></div>
+</div>
+<div class="cols">
+<div class="item"><h3>Амидна веза</h3><p class="t">–CO–NH–, иста као пептидна веза у протеинима</p></div>
+<div class="item"><h3>Зашто 6,6?</h3><p class="t">оба мономера имају по 6 атома угљеника</p></div>
+<div class="item"><h3>Примена</h3><p class="t">чарапе, конопци, падобрани</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 17 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="8" fill="#0E6B5D"/><circle cx="778" cy="10" r="8" fill="#0E6B5D"/><circle cx="826" cy="30" r="6" fill="#C3D3CE"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">17 / 24</p>
+<aside>Други пример је најлон 6,6, полиамид. Мономери су адипинска киселина, са две карбоксилне групе, и хексаметилендиамин, са две амино групе. Карбоксилна и амино група граде амидну везу, CO–NH, и издваја се вода. Занимљиво је да је то иста веза која у протеинима повезује аминокиселине, пептидна веза. Ознака 6,6 значи да сваки мономер има по шест атома угљеника. Најлон је синтетисан 1935. и најпре се користио за женске чарапе, па за падобране у Другом светском рату.</aside>
+</section>
+
+<section id="s-poredjenje">
+<h2>Адициона и кондензациона полимеризација</h2>
+<div class="body">
+<table class="tbl">
+<tr><th></th><th>Адициона</th><th>Кондензациона</th></tr>
+<tr><td>Мономер има</td><td>двоструку везу C=C</td><td>две функционалне групе</td></tr>
+<tr><td>Споредни производ</td><td>нема</td><td>H₂O или HCl</td></tr>
+<tr><td>Јединица у полимеру</td><td>иста као мономер</td><td>разликује се од мономера</td></tr>
+<tr><td>Примери</td><td>PE, PP, PVC, тефлон, каучук</td><td>PET, најлон, силикони</td></tr>
+</table>
+</div>
+<svg class="chainbar" aria-label="Слајд 18 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="8" fill="#0E6B5D"/><circle cx="778" cy="10" r="8" fill="#0E6B5D"/><circle cx="826" cy="30" r="8" fill="#0E6B5D"/><circle cx="874" cy="10" r="6" fill="#C3D3CE"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">18 / 24</p>
+<aside>Да упоредимо. Код адиционе полимеризације мономер има двоструку везу, ништа се не издваја и јединица у полимеру има исти састав као мономер. Примери су полиетен, полипропен, PVC, тефлон и каучук. Код кондензационе мономер има две функционалне групе, издваја се мали молекул, обично вода, па јединица у полимеру није иста као мономер. Примери су PET и најлон, а видећемо да у ову групу спадају и силикони. [Лабораторија: овде отвори страницу са моделима, станица „Адиција и кондензација”, и покажи уживо.]</aside>
+</section>
+
+<section id="s-problem-kaucuka">
+<h2>Проблем сировог каучука</h2>
+<div class="body">
+<svg aria-label="Уплетени ланци каучука који нису међусобно повезани" width="1664" height="200" viewBox="0 0 1664 200"><g fill="none" stroke-width="7" stroke-linecap="round"><path d="M20 60 C200 -20 320 180 520 90 S860 10 1040 120 S1400 190 1640 70" stroke="#12232A"/><path d="M20 150 C240 200 380 20 600 110 S900 190 1100 60 S1440 20 1640 150" stroke="#0E6B5D"/><path d="M60 100 C300 120 420 60 700 160 S1000 30 1250 100 S1500 160 1600 110" stroke="#6F8580"/></g></svg>
+<div class="cols two">
+<div class="item" style="border-top-color:#C0392B;"><h3>Лети, на топлом</h3><p class="lead">мекан и лепљив, тече</p></div>
+<div class="item" style="border-top-color:#2E62B0;"><h3>Зими, на хладном</h3><p class="lead">тврд, крт, пуца</p></div>
+</div>
+<p class="lead" style="max-width:1400px;">Ланци су само уплетени један у други и могу да клизају. Треба их повезати.</p>
+</div>
+<svg class="chainbar" aria-label="Слајд 19 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="8" fill="#0E6B5D"/><circle cx="778" cy="10" r="8" fill="#0E6B5D"/><circle cx="826" cy="30" r="8" fill="#0E6B5D"/><circle cx="874" cy="10" r="8" fill="#0E6B5D"/><circle cx="922" cy="30" r="6" fill="#C3D3CE"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">19 / 24</p>
+<aside>Сирови каучук има велики проблем. Лети постаје мекан и лепљив, а зими тврд и крт. Предмети од њега нису били употребљиви. Разлог је у структури: ланци полиизопрена нису међусобно повезани, само су уплетени, као шпагете у тањиру. Кад се загреју, клизају један поред другог. Решење је да се ланци повежу мостовима, а то се ради вулканизацијом.</aside>
+</section>
+
+<section id="s-vulkanizacija">
+<h2>Вулканизација</h2>
+<div class="body">
+<svg aria-label="Два ланца каучука повезана мостовима од атома сумпора" width="1664" height="270" viewBox="0 0 1664 270">
+<path d="M40 70 L170 40 L300 70 L430 40 L560 70 L690 40 L820 70 L950 40 L1080 70 L1210 40 L1340 70 L1470 40" fill="none" stroke="#12232A" stroke-width="10" stroke-linejoin="round"/>
+<path d="M40 230 L170 200 L300 230 L430 200 L560 230 L690 200 L820 230 L950 200 L1080 230 L1210 200 L1340 230 L1470 200" fill="none" stroke="#12232A" stroke-width="10" stroke-linejoin="round"/>
+<g><animate attributeName="opacity" values="0;0;0;0;0;0;1" dur="0.9s" begin="0s"/><line x1="300" y1="70" x2="300" y2="200" stroke="#E5B800" stroke-width="10"/><circle cx="300" cy="135" r="20" fill="#E5B800"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1" dur="1.2s" begin="0s"/><line x1="690" y1="70" x2="690" y2="200" stroke="#E5B800" stroke-width="10"/><circle cx="690" cy="135" r="20" fill="#E5B800"/></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;0;1" dur="1.6s" begin="0s"/><line x1="1210" y1="70" x2="1210" y2="200" stroke="#E5B800" stroke-width="10"/><circle cx="1210" cy="135" r="20" fill="#E5B800"/></g>
+</svg>
+<div class="cols">
+<div class="item"><h3>Сумпор и топлота</h3><p class="t">атоми S граде мостове на местима двоструких веза</p></div>
+<div class="item"><h3>Мало сумпора, 1–4 %</h3><p class="t">мека, еластична гума</p></div>
+<div class="item"><h3>Много сумпора, 30–40 %</h3><p class="t">тврда гума, ебонит</p></div>
+</div>
+<p class="note">Открили су је 1839. Чарлс Гудјир у САД и Томас Хенкок у Енглеској.</p>
+</div>
+<svg class="chainbar" aria-label="Слајд 20 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="8" fill="#0E6B5D"/><circle cx="778" cy="10" r="8" fill="#0E6B5D"/><circle cx="826" cy="30" r="8" fill="#0E6B5D"/><circle cx="874" cy="10" r="8" fill="#0E6B5D"/><circle cx="922" cy="30" r="8" fill="#0E6B5D"/><circle cx="970" cy="10" r="6" fill="#C3D3CE"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">20 / 24</p>
+<aside>Вулканизација је загревање каучука са сумпором. Атоми сумпора граде мостове између суседних ланаца, жути на слици, и то на местима где су биле двоструке везе. Зато се вулканизовати могу само полимери који имају двоструке везе, као полиизопрен и буна-каучук. Ланци више не могу да клизају, па гума постаје еластична, чвршћа, отпорнија на хабање и не мења се са температуром. Ако се дода мало сумпора, од 1 до 4 процента, добија се мека гума за пнеуматике. Ако се дода много, око 30 до 40 процената, мрежа је толико густа да настаје тврда гума, ебонит. Вулканизацију су открили 1839. Чарлс Гудјир у Америци и Томас Хенкок у Енглеској, а име је добила по Вулкану, римском богу ватре, због загревања и мириса сумпора. [Лабораторија: овде отвори страницу са моделима, станица „Вулканизација”, и покажи уживо.]</aside>
+</section>
+
+<section id="s-silikoni-struktura">
+<h2>Силикони: ланац од силицијума и кисеоника</h2>
+<div class="body">
+<svg aria-label="Ланац силикона: атоми силицијума и кисеоника се смењују, на сваком силицијуму су две метил групе" width="1664" height="290" viewBox="0 0 1664 290">
+<g><animate attributeName="opacity" values="0;0;1" dur="0.5s" begin="0s"/><line x1="120" y1="140" x2="120" y2="50" stroke="#8FA3A0" stroke-width="6"/><line x1="120" y1="140" x2="120" y2="230" stroke="#8FA3A0" stroke-width="6"/><line x1="120" y1="140" x2="340" y2="140" stroke="#8FA3A0" stroke-width="8"/><circle cx="120" cy="40" r="26" fill="#4A5A5F"/><circle cx="120" cy="240" r="26" fill="#4A5A5F"/><circle cx="120" cy="140" r="42" fill="#C99A5B"/><text x="120" y="152" text-anchor="middle" font-family="Golos Text, Arial" font-size="32" font-weight="600" fill="#3B2A12">Si</text><circle cx="230" cy="140" r="32" fill="#D23B2E"/><text x="230" y="151" text-anchor="middle" font-family="Golos Text, Arial" font-size="30" font-weight="600" fill="#FFFFFF">O</text></g><g><animate attributeName="opacity" values="0;0;0;1" dur="0.6s" begin="0s"/><line x1="340" y1="140" x2="340" y2="50" stroke="#8FA3A0" stroke-width="6"/><line x1="340" y1="140" x2="340" y2="230" stroke="#8FA3A0" stroke-width="6"/><line x1="340" y1="140" x2="560" y2="140" stroke="#8FA3A0" stroke-width="8"/><circle cx="340" cy="40" r="26" fill="#4A5A5F"/><circle cx="340" cy="240" r="26" fill="#4A5A5F"/><circle cx="340" cy="140" r="42" fill="#C99A5B"/><text x="340" y="152" text-anchor="middle" font-family="Golos Text, Arial" font-size="32" font-weight="600" fill="#3B2A12">Si</text><circle cx="450" cy="140" r="32" fill="#D23B2E"/><text x="450" y="151" text-anchor="middle" font-family="Golos Text, Arial" font-size="30" font-weight="600" fill="#FFFFFF">O</text></g><g><animate attributeName="opacity" values="0;0;0;0;0;1" dur="0.8s" begin="0s"/><line x1="560" y1="140" x2="560" y2="50" stroke="#8FA3A0" stroke-width="6"/><line x1="560" y1="140" x2="560" y2="230" stroke="#8FA3A0" stroke-width="6"/><line x1="560" y1="140" x2="780" y2="140" stroke="#8FA3A0" stroke-width="8"/><circle cx="560" cy="40" r="26" fill="#4A5A5F"/><circle cx="560" cy="240" r="26" fill="#4A5A5F"/><circle cx="560" cy="140" r="42" fill="#C99A5B"/><text x="560" y="152" text-anchor="middle" font-family="Golos Text, Arial" font-size="32" font-weight="600" fill="#3B2A12">Si</text><circle cx="670" cy="140" r="32" fill="#D23B2E"/><text x="670" y="151" text-anchor="middle" font-family="Golos Text, Arial" font-size="30" font-weight="600" fill="#FFFFFF">O</text></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;1" dur="0.9s" begin="0s"/><line x1="780" y1="140" x2="780" y2="50" stroke="#8FA3A0" stroke-width="6"/><line x1="780" y1="140" x2="780" y2="230" stroke="#8FA3A0" stroke-width="6"/><line x1="780" y1="140" x2="1000" y2="140" stroke="#8FA3A0" stroke-width="8"/><circle cx="780" cy="40" r="26" fill="#4A5A5F"/><circle cx="780" cy="240" r="26" fill="#4A5A5F"/><circle cx="780" cy="140" r="42" fill="#C99A5B"/><text x="780" y="152" text-anchor="middle" font-family="Golos Text, Arial" font-size="32" font-weight="600" fill="#3B2A12">Si</text><circle cx="890" cy="140" r="32" fill="#D23B2E"/><text x="890" y="151" text-anchor="middle" font-family="Golos Text, Arial" font-size="30" font-weight="600" fill="#FFFFFF">O</text></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1" dur="1.1s" begin="0s"/><line x1="1000" y1="140" x2="1000" y2="50" stroke="#8FA3A0" stroke-width="6"/><line x1="1000" y1="140" x2="1000" y2="230" stroke="#8FA3A0" stroke-width="6"/><line x1="1000" y1="140" x2="1220" y2="140" stroke="#8FA3A0" stroke-width="8"/><circle cx="1000" cy="40" r="26" fill="#4A5A5F"/><circle cx="1000" cy="240" r="26" fill="#4A5A5F"/><circle cx="1000" cy="140" r="42" fill="#C99A5B"/><text x="1000" y="152" text-anchor="middle" font-family="Golos Text, Arial" font-size="32" font-weight="600" fill="#3B2A12">Si</text><circle cx="1110" cy="140" r="32" fill="#D23B2E"/><text x="1110" y="151" text-anchor="middle" font-family="Golos Text, Arial" font-size="30" font-weight="600" fill="#FFFFFF">O</text></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1" dur="1.2s" begin="0s"/><line x1="1220" y1="140" x2="1220" y2="50" stroke="#8FA3A0" stroke-width="6"/><line x1="1220" y1="140" x2="1220" y2="230" stroke="#8FA3A0" stroke-width="6"/><line x1="1220" y1="140" x2="1440" y2="140" stroke="#8FA3A0" stroke-width="8"/><circle cx="1220" cy="40" r="26" fill="#4A5A5F"/><circle cx="1220" cy="240" r="26" fill="#4A5A5F"/><circle cx="1220" cy="140" r="42" fill="#C99A5B"/><text x="1220" y="152" text-anchor="middle" font-family="Golos Text, Arial" font-size="32" font-weight="600" fill="#3B2A12">Si</text><circle cx="1330" cy="140" r="32" fill="#D23B2E"/><text x="1330" y="151" text-anchor="middle" font-family="Golos Text, Arial" font-size="30" font-weight="600" fill="#FFFFFF">O</text></g><g><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;1" dur="1.4s" begin="0s"/><line x1="1440" y1="140" x2="1440" y2="50" stroke="#8FA3A0" stroke-width="6"/><line x1="1440" y1="140" x2="1440" y2="230" stroke="#8FA3A0" stroke-width="6"/><circle cx="1440" cy="40" r="26" fill="#4A5A5F"/><circle cx="1440" cy="240" r="26" fill="#4A5A5F"/><circle cx="1440" cy="140" r="42" fill="#C99A5B"/><text x="1440" y="152" text-anchor="middle" font-family="Golos Text, Arial" font-size="32" font-weight="600" fill="#3B2A12">Si</text></g>
+<text x="1486" y="50" font-family="Golos Text, Arial" font-size="24" fill="#4F6168">CH₃</text>
+</svg>
+<div class="cols">
+<div class="item"><h3>Скелет</h3><p class="t">–Si–O–Si–O– уместо ланца од угљеника</p><p class="ex">–[Si(CH₃)₂–O]ₙ–</p></div>
+<div class="item"><h3>Бочне групе</h3><p class="t">на сваком Si две органске групе, најчешће CH₃</p></div>
+<div class="item"><h3>Измењени кварц</h3><p class="t">кварц је мрежа SiO₂; кад се два O замене са CH₃, мрежа постаје ланац</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 21 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="8" fill="#0E6B5D"/><circle cx="778" cy="10" r="8" fill="#0E6B5D"/><circle cx="826" cy="30" r="8" fill="#0E6B5D"/><circle cx="874" cy="10" r="8" fill="#0E6B5D"/><circle cx="922" cy="30" r="8" fill="#0E6B5D"/><circle cx="970" cy="10" r="8" fill="#0E6B5D"/><circle cx="1018" cy="30" r="6" fill="#C3D3CE"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">21 / 24</p>
+<aside>Силикони су посебни полимери: њихов ланац није од угљеника, него се у њему смењују атоми силицијума и кисеоника. На сваки атом силицијума везане су по две органске групе, најчешће метил групе, сиве на слици. Најчешћи силикон је поли(диметил-силоксан). Добро поређење: кварц, односно песак, је тродимензионална мрежа силицијума и кисеоника. Кад на сваком силицијуму два кисеоника заменимо метил групама, мрежа постаје линеаран ланац. Зато силикони имају особине и неорганских материјала, као што је отпорност на топлоту, и органских, као што су савитљивост и одбијање воде.</aside>
+</section>
+
+<section id="s-silikoni-primena">
+<h2>Добијање и примена силикона</h2>
+<div class="body">
+<div class="panel" style="gap:20px;">
+<p class="rx" style="font-size:34px; margin:0;">(CH₃)₂SiCl₂ + 2 H₂O → (CH₃)₂Si(OH)₂ + 2 HCl</p>
+<p class="rx" style="font-size:34px; margin:0;">n (CH₃)₂Si(OH)₂ → –[Si(CH₃)₂–O]ₙ– + n H₂O</p>
+<p class="note">хидролиза дихлордиметилсилана, па кондензација</p>
+</div>
+<div class="cols">
+<div class="item"><h3>Кратки ланци</h3><p class="t">силиконска уља и масти</p><p class="ex">мазива, козметика</p></div>
+<div class="item"><h3>Умрежени ланци</h3><p class="t">силиконска гума</p><p class="ex">калупи за колаче, заптивке, медицински имплантати</p></div>
+<div class="item"><h3>Својства</h3><p class="t">издрже од око −50 до 250 °C, одбијају воду, хемијски инертни</p></div>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 22 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="8" fill="#0E6B5D"/><circle cx="778" cy="10" r="8" fill="#0E6B5D"/><circle cx="826" cy="30" r="8" fill="#0E6B5D"/><circle cx="874" cy="10" r="8" fill="#0E6B5D"/><circle cx="922" cy="30" r="8" fill="#0E6B5D"/><circle cx="970" cy="10" r="8" fill="#0E6B5D"/><circle cx="1018" cy="30" r="8" fill="#0E6B5D"/><circle cx="1066" cy="10" r="6" fill="#C3D3CE"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">22 / 24</p>
+<aside>Силикони се добијају кондензацијом, па спадају у кондензационе полимере. Прво се дихлордиметилсилан хидролизује водом, при чему настају силанол и хлороводоник. Затим се молекули силанола кондензују: хидроксилне групе реагују, издваја се вода и настаје ланац Si–O–Si. Дужином ланца и умрежавањем подешава се шта ћемо добити. Кратки ланци дају силиконска уља, а умрежени силиконску гуму, од које се праве калупи за колаче, заптивке и медицински имплантати. Силикони подносе и велику врућину и хладноћу, одбијају воду и не реагују са организмом.</aside>
+</section>
+
+<section id="s-sredina">
+<h2>Полимери и животна средина</h2>
+<div class="body">
+<div class="cols two" style="align-items:start;">
+<div style="display:flex; flex-direction:column; gap:24px;">
+<p class="quote" style="font-size:96px; color:#0E6B5D;">стотинама година</p>
+<p class="lead">толико се пластика разграђује у природи, јер је хемијски отпорна</p>
+</div>
+<table class="tbl">
+<tr><th>Ознака за рециклажу</th><th>Полимер</th></tr>
+<tr><td>1</td><td>PET</td></tr>
+<tr><td>2 и 4</td><td>полиетен, HDPE и LDPE</td></tr>
+<tr><td>3</td><td>PVC</td></tr>
+<tr><td>5</td><td>полипропен</td></tr>
+<tr><td>6</td><td>полистирен</td></tr>
+</table>
+</div>
+</div>
+<svg class="chainbar" aria-label="Слајд 23 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#C3D3CE" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10" fill="none" stroke="#0E6B5D" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#0E6B5D"/><circle cx="58" cy="30" r="8" fill="#0E6B5D"/><circle cx="106" cy="10" r="8" fill="#0E6B5D"/><circle cx="154" cy="30" r="8" fill="#0E6B5D"/><circle cx="202" cy="10" r="8" fill="#0E6B5D"/><circle cx="250" cy="30" r="8" fill="#0E6B5D"/><circle cx="298" cy="10" r="8" fill="#0E6B5D"/><circle cx="346" cy="30" r="8" fill="#0E6B5D"/><circle cx="394" cy="10" r="8" fill="#0E6B5D"/><circle cx="442" cy="30" r="8" fill="#0E6B5D"/><circle cx="490" cy="10" r="8" fill="#0E6B5D"/><circle cx="538" cy="30" r="8" fill="#0E6B5D"/><circle cx="586" cy="10" r="8" fill="#0E6B5D"/><circle cx="634" cy="30" r="8" fill="#0E6B5D"/><circle cx="682" cy="10" r="8" fill="#0E6B5D"/><circle cx="730" cy="30" r="8" fill="#0E6B5D"/><circle cx="778" cy="10" r="8" fill="#0E6B5D"/><circle cx="826" cy="30" r="8" fill="#0E6B5D"/><circle cx="874" cy="10" r="8" fill="#0E6B5D"/><circle cx="922" cy="30" r="8" fill="#0E6B5D"/><circle cx="970" cy="10" r="8" fill="#0E6B5D"/><circle cx="1018" cy="30" r="8" fill="#0E6B5D"/><circle cx="1066" cy="10" r="8" fill="#0E6B5D"/><circle cx="1114" cy="30" r="6" fill="#C3D3CE"/></svg><p class="pg">23 / 24</p>
+<aside>Исто својство због ког су полимери корисни, хемијска отпорност, у природи постаје проблем. Пластика се разграђује стотинама година и завршава у морима и земљишту. Решење је рециклажа, а њу омогућавају термопласти, јер могу поново да се истопе и обликују. На амбалажи се налази троугао са бројем који говори од ког је полимера. Погледајте: то су исти полимери које смо данас обрадили. Број 1 је PET, 2 и 4 су полиетен, 3 је PVC, 5 полипропен и 6 полистирен.</aside>
+</section>
+
+<section id="s-zakljucak" class="ink">
+<h2 style="color:#E8F0EE;">Укратко</h2>
+<div class="body">
+<div class="cols">
+<div class="item" style="border-top-color:#5DCAA5;"><h3>Адициона</h3><p class="t" style="color:#B7CBC6;">двострука веза се отвара, ништа се не издваја</p></div>
+<div class="item" style="border-top-color:#5DCAA5;"><h3>Кондензациона</h3><p class="t" style="color:#B7CBC6;">функционалне групе реагују, издваја се вода</p></div>
+<div class="item" style="border-top-color:#E5B800;"><h3>Вулканизација</h3><p class="t" style="color:#B7CBC6;">сумпорни мостови од каучука праве гуму</p></div>
+</div>
+<p class="quote" style="color:#E8F0EE;">Хвала на пажњи. Питања?</p>
+</div>
+<svg class="chainbar" aria-label="Слајд 24 од 24" width="1160" height="40" viewBox="0 0 1160 40"><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#3A5A55" stroke-width="3"/><polyline points="10,10 58,30 106,10 154,30 202,10 250,30 298,10 346,30 394,10 442,30 490,10 538,30 586,10 634,30 682,10 730,30 778,10 826,30 874,10 922,30 970,10 1018,30 1066,10 1114,30" fill="none" stroke="#5DCAA5" stroke-width="4"/><circle cx="10" cy="10" r="8" fill="#5DCAA5"/><circle cx="58" cy="30" r="8" fill="#5DCAA5"/><circle cx="106" cy="10" r="8" fill="#5DCAA5"/><circle cx="154" cy="30" r="8" fill="#5DCAA5"/><circle cx="202" cy="10" r="8" fill="#5DCAA5"/><circle cx="250" cy="30" r="8" fill="#5DCAA5"/><circle cx="298" cy="10" r="8" fill="#5DCAA5"/><circle cx="346" cy="30" r="8" fill="#5DCAA5"/><circle cx="394" cy="10" r="8" fill="#5DCAA5"/><circle cx="442" cy="30" r="8" fill="#5DCAA5"/><circle cx="490" cy="10" r="8" fill="#5DCAA5"/><circle cx="538" cy="30" r="8" fill="#5DCAA5"/><circle cx="586" cy="10" r="8" fill="#5DCAA5"/><circle cx="634" cy="30" r="8" fill="#5DCAA5"/><circle cx="682" cy="10" r="8" fill="#5DCAA5"/><circle cx="730" cy="30" r="8" fill="#5DCAA5"/><circle cx="778" cy="10" r="8" fill="#5DCAA5"/><circle cx="826" cy="30" r="8" fill="#5DCAA5"/><circle cx="874" cy="10" r="8" fill="#5DCAA5"/><circle cx="922" cy="30" r="8" fill="#5DCAA5"/><circle cx="970" cy="10" r="8" fill="#5DCAA5"/><circle cx="1018" cy="30" r="8" fill="#5DCAA5"/><circle cx="1066" cy="10" r="8" fill="#5DCAA5"/><circle cx="1114" cy="30" r="8" fill="#5DCAA5"/></svg><p class="pg">24 / 24</p>
+<aside>Да закључим. Полимери су макромолекули грађени од много истих јединица. Настају на два начина: адиционом полимеризацијом, где се двострука веза отвара и ништа се не издваја, као код полиетена, PVC-а и каучука, или кондензационом, где функционалне групе реагују и издваја се вода, као код PET-а, најлона и силикона. Вулканизацијом се ланци каучука повезују сумпорним мостовима, па од каучука настаје гума. Хвала на пажњи. Ако имате питања, изволите. Резервна питања за разред, из уџбеника: шта је полиетилен, а шта тефлон; напиши једначину полимеризације етена; наведи разлике између пластике и гуме.</aside>
+</section>
+
+</div></div>
+<div class="ctrl"><button id="dPrev">Назад</button><span class="num" id="dNum"></span><button id="dNext" class="go">Напред</button><button id="dNotes">Белешке</button><button id="dFull">Цео екран</button></div>
+<div class="notes" id="dNotesBox"></div>
+</div>
+<main>
+
+<section class="st" id="lanac">
+<div class="fig"><svg id="sv1" viewBox="0 0 900 460" aria-label="Ланац полимера од n мономера"></svg></div>
+<div class="side">
+<h2>Степен полимеризације</h2>
+<p>Свака куглица је један мономер. Повуци клизач и гледај како ланац расте и колико је тежак.</p>
+<label for="mono">Мономер</label>
+<div class="btns" id="monoBtns"></div>
+<label for="n">n = <span id="nOut">10</span></label>
+<input type="range" id="n" min="1" max="60" value="10" step="1">
+<p class="big" id="mOut"></p>
+<p id="realOut"></p>
+</div>
+</section>
+
+<section class="st" id="zamena">
+<div class="fig"><svg id="sv2" viewBox="0 0 900 460" aria-label="Мономер са замењеним атомом водоника"></svg></div>
+<div class="side">
+<h2>Замени један водоник</h2>
+<p>Сви мономери из табеле 5.5.1 имају исту основу CH₂=CH–X. Изабери шта је X.</p>
+<div class="btns" id="subBtns"></div>
+<p class="f" id="z1"></p><p class="f" id="z2" style="color:var(--teal)"></p>
+<p id="z3"></p>
+</div>
+</section>
+
+<section class="st" id="mehanizam">
+<div class="fig"><svg id="sv3" viewBox="0 0 900 460" aria-label="Радикалска полимеризација етена корак по корак"></svg></div>
+<div class="side">
+<h2>Радикал гради ланац</h2>
+<p>Жута тачка је неспарени електрон. Прати где се налази после сваког корака.</p>
+<div class="btns"><button id="mBack">Назад</button><button id="mNext" class="go">Следећи корак</button><button id="mPlay">Пусти све</button></div>
+<p class="f" id="mStep"></p>
+<p class="cap" id="mCap"></p>
+</div>
+</section>
+
+<section class="st" id="vulkanizacija">
+<div class="fig"><svg id="sv4" viewBox="0 0 900 460" aria-label="Ланци каучука повезани сумпорним мостовима"></svg></div>
+<div class="side">
+<h2>Вулканизација</h2>
+<p>Додај сумпор, па истегни материјал. Без мостова ланци склизну и не враћају се.</p>
+<label for="s">Сумпор: <span id="sOut">0</span> %</label>
+<input type="range" id="s" min="0" max="40" value="0" step="1">
+<p><span class="tag" id="sTag"></span></p>
+<div class="btns"><button id="pull" class="go">Истегни</button><button id="reset">Врати на почетак</button></div>
+<p class="cap" id="sCap"></p>
+</div>
+</section>
+
+<section class="st" id="poredjenje">
+<div class="fig"><svg id="sv5" viewBox="0 0 900 460" aria-label="Повезивање мономера адицијом или кондензацијом"></svg></div>
+<div class="side">
+<h2>Адиција или кондензација?</h2>
+<p>Исти задатак, пет мономера у ланац. Гледај шта остаје сувишно.</p>
+<div class="btns"><button id="tA" class="on">Адициона</button><button id="tK">Кондензациона</button></div>
+<div class="btns"><button id="run" class="go">Покрени</button></div>
+<p class="big" id="wOut"></p>
+<p class="cap" id="kCap"></p>
+</div>
+</section>
+
+</main>
+<script>
+{
+const $=id=>document.getElementById(id);
+const ST=[['prezentacija','Презентација'],['lanac','Ланац'],['zamena','Замени H'],['mehanizam','Механизам'],['vulkanizacija','Вулканизација'],['poredjenje','Адиција и кондензација']];
+$('nav').innerHTML=ST.map(([h,t])=>`<a href="#${h}">${t}</a>`).join('');
+const route=()=>{const h=(location.hash||'#prezentacija').slice(1);const k=ST.some(s=>s[0]===h)?h:'prezentacija';
+ ST.slice(1).forEach(([id])=>$(id).classList.toggle('on',id===k));
+ $('prez').classList.toggle('on',k==='prezentacija');document.querySelector('main').style.display=k==='prezentacija'?'none':'';
+ if(k==='prezentacija')fit();
+ document.querySelectorAll('#nav a').forEach(a=>a.setAttribute('aria-current',a.getAttribute('href')==='#'+k));};
+addEventListener('hashchange',route);
+/* Презентација */
+const deck=$('deck'),stage=$('stage');let slides=[...deck.children],cur=0;
+function fit(){const w=stage.clientWidth||1,full=document.fullscreenElement===stage;const avail=full?innerHeight:Math.max(240,innerHeight-235);
+ let sc=Math.min(w/1920,avail/1080);if(!full){stage.style.height=(1080*Math.min(w/1920,avail/1080))+'px';}else stage.style.height='';
+ deck.style.transform=`translate(${(w-1920*sc)/2}px,${full?(innerHeight-1080*sc)/2:0}px) scale(${sc})`;}
+addEventListener('resize',fit);document.addEventListener('fullscreenchange',fit);
+function go(i,all){cur=Math.max(0,Math.min(slides.length-1,i));
+ slides.forEach(s=>s.hidden=true);const c=slides[cur].cloneNode(true);slides[cur].replaceWith(c);slides[cur]=c;c.hidden=false;
+ c.querySelectorAll('.fragment').forEach(f=>f.classList.toggle('visible',!!all));
+ c.querySelectorAll('svg').forEach(v=>{try{v.setCurrentTime(0)}catch(e){}});
+ $('dNum').textContent=(cur+1)+' / '+slides.length;const a=c.querySelector('aside');$('dNotesBox').textContent=a?a.textContent:'';}
+function next(){const f=slides[cur].querySelector('.fragment:not(.visible)');if(f){f.classList.add('visible');return;}if(cur<slides.length-1)go(cur+1,false);}
+function prev(){if(cur>0)go(cur-1,true);}
+$('dNext').onclick=next;$('dPrev').onclick=prev;stage.onclick=next;
+$('dNotes').onclick=()=>{$('dNotesBox').classList.toggle('on');$('dNotes').classList.toggle('on');};
+$('dFull').onclick=()=>{try{const r=stage.requestFullscreen&&stage.requestFullscreen();if(r&&r.catch)r.catch(()=>{});}catch(e){}};
+addEventListener('keydown',e=>{if(!$('prez').classList.contains('on'))return;if(e.target.closest&&e.target.closest('input'))return;
+ if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();next();}
+ else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();prev();}
+ else if(e.key==='n'||e.key==='н'){$('dNotes').click();}else if(e.key==='f'||e.key==='ф'){$('dFull').click();}});
+go(0,false);
+route();
+const cs=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||'#888';
+const T=(x,y,s,txt,fill,w)=>`<text x="${x}" y="${y}" font-size="${s}" font-family="Golos Text,Arial" font-weight="${w||500}" fill="${fill}" text-anchor="middle">${txt}</text>`;
+
+/* 1 Ланац */
+const MON=[['етен',28,'PE'],['пропен',42,'PP'],['хлоретен',62.5,'PVC'],['стирен',104,'PS'],['тетрафлуоретен',100,'тефлон']];
+let mi=0;
+$('monoBtns').innerHTML=MON.map((m,i)=>`<button data-i="${i}">${m[2]}</button>`).join('');
+$('monoBtns').onclick=e=>{const b=e.target.closest('button');if(!b)return;mi=+b.dataset.i;draw1();};
+const draw1=()=>{const n=+$('n').value;$('nOut').textContent=n;
+ document.querySelectorAll('#monoBtns button').forEach((b,i)=>b.classList.toggle('on',i===mi));
+ const per=12,dx=66,out=[];let path='';
+ for(let i=0;i<n;i++){const row=Math.floor(i/per),c=i%per,col=row%2?per-1-c:c;const x=70+col*dx,y=70+row*80+(c%2?18:0);path+=(i?'L':'M')+x+' '+y;out.push([x,y]);}
+ $('sv1').innerHTML=`<path d="${path}" fill="none" stroke="${cs('--C')}" stroke-width="6" stroke-linejoin="round"/>`+out.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="18" fill="${cs('--teal')}"/>`).join('');
+ const M=MON[mi][1];$('mOut').textContent=`M = ${n} × ${String(M).replace('.',',')} = ${(n*M).toLocaleString('sr-RS')} g/mol`;
+ $('realOut').textContent=`Прави ${MON[mi][2]} има n око 10 000, па је M око ${(10000*M).toLocaleString('sr-RS')} g/mol.`;};
+$('n').oninput=draw1;draw1();
+
+/* 2 Замена */
+const SUB=[['H','H','етен','полиетен (PE)','–[CH₂–CH₂]ₙ–','кесе, фолије, посуђе','--H'],
+ ['CH₃','CH₃','пропен','полипропен (PP)','–[CH₂–CH(CH₃)]ₙ–','влакна, хемијско посуђе','--C'],
+ ['Cl','Cl','хлоретен (винил-хлорид)','поли(винил-хлорид), PVC','–[CH₂–CHCl]ₙ–','водоводне цеви','--Cl'],
+ ['C₆H₅','C₆H₅','стирен','полистирен (PS)','–[CH₂–CH(C₆H₅)]ₙ–','стиропор, изолација','--C'],
+ ['F (сви)','F','тетрафлуоретен','тефлон','–[CF₂–CF₂]ₙ–','тигањи, изолација','--F']];
+let si=0;
+$('subBtns').innerHTML=SUB.map((s,i)=>`<button data-i="${i}">${s[0]}</button>`).join('');
+$('subBtns').onclick=e=>{const b=e.target.closest('button');if(!b)return;si=+b.dataset.i;draw2();};
+const atom=(x,y,r,col,lab,tc)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${col}" stroke="${cs('--line')}" stroke-width="2"/>`+T(x,y+r*0.35,r*0.9,lab,tc,600);
+const draw2=()=>{const s=SUB[si];document.querySelectorAll('#subBtns button').forEach((b,i)=>b.classList.toggle('on',i===si));
+ const allF=si===4,cx1=360,cx2=540,cy=230;
+ const sub=[[cx1-110,cy-110,allF?'F':'H'],[cx1-110,cy+110,allF?'F':'H'],[cx2+110,cy-110,allF?'F':'H'],[cx2+110,cy+110,s[1]]];
+ let g=`<line x1="${cx1}" y1="${cy-12}" x2="${cx2}" y2="${cy-12}" stroke="${cs('--O')}" stroke-width="9"/><line x1="${cx1}" y1="${cy+12}" x2="${cx2}" y2="${cy+12}" stroke="${cs('--O')}" stroke-width="9"/>`;
+ sub.forEach(([x,y])=>g+=`<line x1="${x<450?cx1:cx2}" y1="${cy}" x2="${x}" y2="${y}" stroke="${cs('--C')}" stroke-width="9"/>`);
+ sub.forEach(([x,y,l],i)=>{const X=i===3||allF;const col=l==='H'?cs('--H'):l==='Cl'?cs('--Cl'):l==='F'?cs('--F'):cs('--C');const big=l.length>1?54:40;
+  g+=`<g>${X&&i===3?'<animate attributeName="opacity" values="0;1" dur=".4s"/>':''}${atom(x,y,big,col,l,l==='H'?'#12232A':'#FFFFFF')}</g>`;});
+ g+=atom(cx1,cy,52,cs('--C'),'C','#FFFFFF')+atom(cx2,cy,52,cs('--C'),'C','#FFFFFF');
+ g+=T(450,440,22,'црвено: двострука веза C=C, која се при полимеризацији отвара',cs('--soft'));
+ $('sv2').innerHTML=g;
+ $('z1').textContent=`Мономер: ${s[2]}`;$('z2').textContent=`${s[3]}: ${s[4]}`;$('z3').textContent=`Примена: ${s[5]}.`;};
+draw2();
+
+/* 3 Механизам */
+const STEPS=[['Пероксид','Органски пероксид RO–OR. Веза O–O је слаба.'],
+ ['Иницијација','Загревањем се RO–OR распада на два радикала RO•.'],
+ ['Иницијација','RO• напада двоструку везу етена; неспарени електрон прелази на крај: RO–CH₂–ĊH₂.'],
+ ['Пропагација','Радикал напада следећи етен; ланац расте, а електрон је опет на крају.'],
+ ['Пропагација','И тако хиљадама пута.'],
+ ['Пропагација','Ланац је све дужи.'],
+ ['Терминација','Радикал на крају ланца сусреће радикал •OR. Спајају се и раст се зауставља: RO–(CH₂–CH₂)ₙ–OR.']];
+let ms=0,timer=null;
+const draw3=()=>{const k=ms;let g='';const y=230;
+ const units=k<2?0:k===2?1:k===3?2:k===4?4:k===5?6:6;
+ const ox=60;
+ if(k===0){g+=atom(330,y,40,cs('--O'),'O','#FFF')+`<line x1="370" y1="${y}" x2="530" y2="${y}" stroke="${cs('--O')}" stroke-width="8"/>`+atom(570,y,40,cs('--O'),'O','#FFF')+T(330,y-70,26,'RO',cs('--ink'))+T(570,y-70,26,'OR',cs('--ink'));}
+ else{
+  g+=atom(ox+40,y,36,cs('--O'),'O','#FFF')+T(ox+40,y-60,24,'RO',cs('--ink'));
+  let px=ox+40;
+  for(let i=0;i<units*2;i++){const x=ox+120+i*52,yy=y+(i%2?26:-26);g+=`<line x1="${px}" y1="${i?y+((i-1)%2?26:-26):y}" x2="${x}" y2="${yy}" stroke="${cs('--C')}" stroke-width="7"/>`;px=x;}
+  for(let i=0;i<units*2;i++){const x=ox+120+i*52,yy=y+(i%2?26:-26);g+=`<circle cx="${x}" cy="${yy}" r="20" fill="${cs('--C')}"/>`;}
+  const ex=units?ox+120+(units*2-1)*52:ox+40,ey=units?y+((units*2-1)%2?26:-26):y;
+  if(k<6) g+=`<circle cx="${ex+(units?0:0)}" cy="${ey-(units?30:50)}" r="11" fill="${cs('--S')}"><animate attributeName="r" values="6;13;6" dur="1s" repeatCount="indefinite"/></circle>`;
+  if(k===1) g+=atom(820,y,36,cs('--O'),'O','#FFF')+T(820,y-60,24,'•OR',cs('--ink'));
+  if(k>=2&&k<6) for(let j=0;j<2;j++){const fx=700+j*90,fy=110+j*230;g+=`<line x1="${fx-22}" y1="${fy-6}" x2="${fx+22}" y2="${fy-6}" stroke="${cs('--O')}" stroke-width="5"/><line x1="${fx-22}" y1="${fy+6}" x2="${fx+22}" y2="${fy+6}" stroke="${cs('--O')}" stroke-width="5"/><circle cx="${fx-26}" cy="${fy}" r="17" fill="${cs('--C')}"/><circle cx="${fx+26}" cy="${fy}" r="17" fill="${cs('--C')}"/>`+T(fx,fy+48,20,'етен',cs('--soft'));}
+  if(k===6) g+=`<line x1="${ex}" y1="${ey}" x2="${ex+70}" y2="${y}" stroke="${cs('--C')}" stroke-width="7"/>`+atom(ex+100,y,36,cs('--O'),'O','#FFF')+T(ex+100,y-60,24,'OR',cs('--ink'));
+ }
+ $('sv3').innerHTML=g;$('mStep').textContent=`${k+1}/7 · ${STEPS[k][0]}`;$('mCap').textContent=STEPS[k][1];};
+$('mNext').onclick=()=>{ms=Math.min(6,ms+1);draw3();};
+$('mBack').onclick=()=>{ms=Math.max(0,ms-1);draw3();};
+$('mPlay').onclick=()=>{clearInterval(timer);ms=0;draw3();timer=setInterval(()=>{if(ms>=6){clearInterval(timer);return;}ms++;draw3();},1300);};
+draw3();
+
+/* 4 Вулканизација */
+const CH=[110,230,350];let shift=[0,0,0];
+const draw4=()=>{const S=+$('s').value;$('sOut').textContent=S;shift=[0,0,0];
+ const nb=S===0?0:Math.min(24,Math.round(2+S*0.55));
+ $('sTag').textContent=S===0?'сирови каучук':S<=4?'мека гума':S<30?'све тврђа гума':'ебонит, тврда гума';
+ const tr='transition:transform .7s cubic-bezier(.3,1.4,.5,1)';let g='';
+ CH.forEach((y,ci)=>{let d='';for(let i=0;i<16;i++)d+=(i?'L':'M')+(30+i*56)+' '+(y+(i%2?14:-14));
+  g+=`<g class="ch" data-i="${ci}" style="${tr}"><path d="${d}" fill="none" stroke="${cs('--C')}" stroke-width="9" stroke-linejoin="round"/></g>`;});
+ for(let b=0;b<nb;b++){const pair=b%2,col=1+((b*5)%14);const x=30+col*56,y1=CH[pair]+14,y2=CH[pair+1]-14;
+  g+=`<g class="br" data-a="${pair}" style="${tr}"><line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${cs('--S')}" stroke-width="8"/><circle cx="${x}" cy="${(y1+y2)/2}" r="13" fill="${cs('--S')}"/></g>`;}
+ $('sv4').innerHTML=g;return nb;};
+const move4=()=>{$('sv4').querySelectorAll('.ch').forEach(e=>e.style.transform=`translateX(${shift[+e.dataset.i]}px)`);
+ $('sv4').querySelectorAll('.br').forEach(e=>{const a=+e.dataset.a;e.style.transform=`translateX(${(shift[a]+shift[a+1])/2}px)`;});};
+$('s').oninput=()=>{draw4();$('sCap').textContent='';};
+$('pull').onclick=()=>{const S=+$('s').value;const nb=draw4();const amp=S===0?150:Math.max(12,150*(1-S/34));
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{shift=[-amp,0,amp];move4();}));
+ setTimeout(()=>{if(nb>0){shift=[0,0,0];move4();}
+  $('sCap').textContent=S===0?'Ланци су склизнули један поред другог и остали тако. Сирови каучук тече.':S<=4?'Мостова је мало: материјал се растегне и врати. То је еластична гума.':S<30?'Мостова је много: гума је све тврђа и мање се растеже.':'Мрежа је толико густа да се скоро не помера: ебонит.';},850);};
+$('reset').onclick=()=>{$('s').value=0;draw4();$('sCap').textContent='';};
+draw4();
+
+/* 5 Адиција и кондензација */
+let kind='A',busy=false;
+const draw5=(t)=>{let g='';const y=200,w=110,gap=kind==='A'?0:0;let water=0;
+ for(let i=0;i<5;i++){const tx=80+i*150,fx=90+i*(w+8);const p=Math.max(0,Math.min(1,t*5-i));const x=tx+(fx-tx)*p;
+  g+=`<rect x="${x}" y="${y}" width="${w}" height="70" rx="4" fill="${i%2&&kind==='K'?cs('--line'):cs('--teal')}" opacity=".9"/>`+T(x+w/2,y+45,24,kind==='A'?'CH₂=CH₂':(i%2?'B':'A'),i%2&&kind==='K'?cs('--ink'):'#FFFFFF',600);
+  if(kind==='K'&&i>0&&p>=1){water++;const age=t*5-i-1+1e-9;const wy=y-45-Math.min(95,age*110);g+=`<g>${atom(fx-4,wy,22,cs('--O'),'O','#FFF')}<circle cx="${fx-30}" cy="${wy+14}" r="12" fill="${cs('--H')}" stroke="${cs('--line')}"/><circle cx="${fx+22}" cy="${wy+14}" r="12" fill="${cs('--H')}" stroke="${cs('--line')}"/></g>`;}}
+ g+=T(450,400,22,kind==='A'?'двоструке везе се отварају, сви атоми остају у ланцу':'на сваком споју се издваја молекул воде',cs('--soft'));
+ $('sv5').innerHTML=g;
+ $('wOut').textContent=kind==='A'?'споредни производ: нема':`издвојено H₂O: ${water}`;};
+const set5=k=>{kind=k;$('tA').classList.toggle('on',k==='A');$('tK').classList.toggle('on',k==='K');
+ $('kCap').textContent=k==='A'?'Пример: етен → полиетен, пропен → полипропен.':'Пример: терефтална киселина + етандиол → PET + вода.';draw5(0);};
+$('tA').onclick=()=>set5('A');$('tK').onclick=()=>set5('K');
+$('run').onclick=()=>{if(busy)return;busy=true;const t0=performance.now();const f=now=>{const t=Math.min(1.2,(now-t0)/3500);draw5(t);if(t<1.2)requestAnimationFrame(f);else busy=false;};requestAnimationFrame(f);};
+set5('A');
+}
+</script>
+</body>
+</html>
